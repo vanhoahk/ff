@@ -1,0 +1,9 @@
+{
+  "version": 2,
+  "builds": [
+    { "src": "d.py", "use": "@vercel/python" }
+  ],
+  "env": {
+    "TELEGRAM_API_TOKEN": "@telegram_api_token"
+  }
+}
