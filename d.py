@@ -2,8 +2,7 @@ import telebot
 import requests
 from datetime import datetime
 
-
-API_TOKEN = os.getenv("7553033910:AAEGCBIdWwPH3_-NzhbW2Q-TIzfdDtBtJXA")"
+TOKEN = '7553033910:AAEGCBIdWwPH3_-NzhbW2Q-TIzfdDtBtJXA'
 bot = telebot.TeleBot(TOKEN)
 
 # ID của nhóm được phép sử dụng bot
@@ -35,7 +34,6 @@ def get_freefire_info(uid):
 def handle_ff(message):
     chat_id = message.chat.id
 
-    # Kiểm tra xem nhóm có được phép sử dụng bot hay không
     if chat_id != ALLOWED_GROUP_ID:
         bot.send_message(chat_id, "Không được phép sử dụng bot trong nhóm này. Vui lòng sử dụng trong nhóm hỗ trợ.")
         return
@@ -54,7 +52,6 @@ def handle_ff(message):
         if data and 'error' in data:
             bot.edit_message_text("Lỗi: ID game này không tồn tại.", chat_id=chat_id, message_id=msg.message_id)
         elif data:
-            # Nếu không có AccountName thì trả về thông báo và dừng các xử lý khác
             if 'AccountName' not in data:
                 bot.edit_message_text("Acc không tồn tại trên hệ thống hoặc hệ thống bot đang quá tải.", chat_id=chat_id, message_id=msg.message_id)
                 return
@@ -62,12 +59,12 @@ def handle_ff(message):
             account_create_time = format_time(data.get('AccountCreateTime'))
             account_last_login = format_time(data.get('AccountLastLogin'))
 
-            cs_rank_point = data.get('CsRankPoint', 0)
-            br_rank_point = data.get('BrRankPoint', 0)
+            cs_rank_point = data.get('CsRank', 0)
+            br_rank_point = data.get('BrRank', 0)
             account_bp_badges = data.get('AccountBPBadges', 0)
-            account_likes = data.get('AccountLikes', 0)  # Thêm dòng này cho giá trị số Like
+            account_likes = data.get('AccountLikes', 0) 
 
-            guild_info = data.get('Guild Infomartion', {})
+            guild_info = data.get('Guild Information', {})
             leader_info = guild_info.get('LeaderInfo', {})
             guild_create_time = format_time(leader_info.get('CreateTime', 0))
             leader_last_login = format_time(leader_info.get('LastLogin', 0))
@@ -77,7 +74,7 @@ def handle_ff(message):
             badge_count = latest_badge_info.get('BadgeCount', 0)
             badge_id = latest_badge_info.get('BadgeId', 0)
 
-            pet_info = data.get('Pet Infomartion', {})
+            pet_info = data.get('Pet Information', {})
             pet_name = pet_info.get('PetName')
             pet_level = pet_info.get('PetLevel')
             pet_exp = pet_info.get('PetEXP')
@@ -88,7 +85,7 @@ def handle_ff(message):
             elif equipped_pet == 0 or equipped_pet == "Không Trang Bị":
                 equipped_pet = "Không Trang Bị"
 
-            # Xây dựng thông điệp kết quả với kiểm tra từng giá trị
+            
             result_message = f"➠ ID Game: {data.get('AccountUID')}\n"
             result_message += "<blockquote>\n"
 
@@ -100,18 +97,20 @@ def handle_ff(message):
                 result_message += f"Cấp Độ: {data['AccountLevel']}\n"
             if 'AccountEXP' in data:
                 result_message += f"Exp: {data['AccountEXP']}\n"
+            if 'AccountSignature' in data:
+                result_message += f"Tiểu Sử: {data['AccountSignature']}\n"     
             result_message += f"Số Like: {account_likes}\n"  # Hiển thị số Like
 
             result_message += "━━━━━━━━━━━━━━━━\n"
 
-            if account_create_time:
-                result_message += f"Ngày Tạo: {account_create_time}\n"
-            if account_last_login:
-                result_message += f"Login Gần Đây: {account_last_login}\n"
+            if 'AccountCreateTime' in data:
+                result_message += f"Ngày Tạo: {data['AccountCreateTime']}\n"     
+            if 'AccountLastLogin' in data:
+                result_message += f"Login Lần Cuối: {data['AccountLastLogin']}\n" 
 
             result_message += "━━━━━━━━━━━━━━━━\n"
-            result_message += f"Rank Sinh Tồn: {br_rank_point} Điểm\n"
-            result_message += f"Rank Tử Chiến: {cs_rank_point} Sao\n"
+            result_message += f"Rank Sinh Tồn: {br_rank_point}\n"
+            result_message += f"Rank Tử Chiến: {cs_rank_point}\n"
             result_message += "━━━━━━━━━━━━━━━━\n"
 
             result_message += f"Số Booyah Mùa Trước: {badge_count} Huy Hiệu\n"
@@ -119,7 +118,6 @@ def handle_ff(message):
 
             result_message += "━━━━━━━━━━━━━━━━\n"
 
-            # Kiểm tra và hiển thị thông tin Quân Đoàn
             if 'GuildName' in guild_info:
                 result_message += f"Tên Quân Đoàn: {guild_info['GuildName']}\n"
             else:
@@ -170,4 +168,4 @@ def handle_ff(message):
     except Exception as e:
         bot.edit_message_text(f"Đã xảy ra lỗi: {e}", chat_id=chat_id, message_id=msg.message_id)
 
-bot.infinity_polling()
+bot.polling()
